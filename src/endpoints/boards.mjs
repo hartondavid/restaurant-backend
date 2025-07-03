@@ -9,14 +9,12 @@ const router = Router();
 router.post('/addBoard', userAuthMiddleware, async (req, res) => {
 
     try {
-
         const { number } = req.body;
         const userId = req.user?.id;
 
         if (!number) {
             return sendJsonResponse(res, false, 400, "Numarul mesei este obligatoriu!", []);
         }
-
 
         const userRights = await db('user_rights')
             .join('rights', 'user_rights.right_id', 'rights.id')
@@ -30,7 +28,6 @@ router.post('/addBoard', userAuthMiddleware, async (req, res) => {
         }
 
         const [id] = await db('boards').insert({ number, waiter_id: userId });
-
 
         const board = await db('boards').where({ id }).first();
         return sendJsonResponse(res, true, 201, "Masa a fost adăugată cu succes!", { board });

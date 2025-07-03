@@ -12,6 +12,4 @@ router.use('/boards/', boards)
 router.use('/orders/', orders)
 router.use('/products/', products)
 
-
 export default router;
-
