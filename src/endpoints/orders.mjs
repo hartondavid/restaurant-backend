@@ -1,5 +1,5 @@
 import { Router } from "express";
-import db from "../utils/database.mjs";
+import databaseManager from "../utils/database.mjs";
 import { sendJsonResponse } from "../utils/utilFunctions.mjs";
 import { userAuthMiddleware } from "../utils/middlewares/userAuthMiddleware.mjs";
 
@@ -111,7 +111,7 @@ router.get('/getOrders', userAuthMiddleware, async (req, res) => {
         }
 
         const results = await Promise.all(orders.map(async order => {
-            const orderItems = await db('order_items')
+            const orderItems = await databaseManager('order_items')
                 .leftJoin('products', 'order_items.product_id', 'products.id')
                 .where('order_items.order_id', order.id)
                 .select(

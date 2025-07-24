@@ -32,10 +32,11 @@ router.post('/addProduct', userAuthMiddleware, upload.fields([{ name: 'image' }]
             return sendJsonResponse(res, false, 400, "Image is required", null);
         }
 
-        let filePathForImagePath = req.files['image'][0].path; // Get the full file path
-        filePathForImagePath = filePathForImagePath.replace(/^public[\\/]/, '');
+        if (!req.files || !req.files['photo']) {
+            return sendJsonResponse(res, false, 400, "Image is required", null);
+        }
 
-
+        await smartUpload(req.files['photo'][0], 'products');
 
         const [id] = await (await databaseManager.getKnex())('products').insert({ name, image: filePathForImagePath, description, price, quantity, manager_id: userId });
 
@@ -110,10 +111,11 @@ router.put('/updateProduct/:productId', userAuthMiddleware, upload.fields([{ nam
         };
 
 
-        if (req.files && req.files['image'] && req.files['image'][0]) {
-            let filePathForImagePath = req.files['image'][0].path;
-            filePathForImagePath = filePathForImagePath.replace(/^public[\\/]/, '');
-            updateData.image = filePathForImagePath;
+        if (req.files && req.files['photo'] && req.files['photo'][0]) {
+            // Use smart upload function that automatically chooses storage method
+            const photoUrl = await smartUpload(req.files['photo'][0], 'products');
+
+            updateData.photo = photoUrl;
         }
 
         await (await databaseManager.getKnex())('products').where({ id: productId }).update(updateData);
@@ -146,6 +148,13 @@ router.delete('/deleteProduct/:productId', userAuthMiddleware, async (req, res) 
 
         const product = await (await databaseManager.getKnex())('products').where({ id: productId }).first();
         if (!product) return sendJsonResponse(res, false, 404, "Produsul nu există!", []);
+
+        // Delete the image from Vercel Blob if it's a Blob URL
+        if (product.photo) {
+
+            await deleteFromBlob(product.photo);
+        }
+
         await (await databaseManager.getKnex())('products').where({ id: productId }).del();
 
         return sendJsonResponse(res, true, 200, "Produsul a fost șters cu succes!", []);
