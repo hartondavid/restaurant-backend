@@ -27,10 +27,10 @@ router.post('/addBoard', userAuthMiddleware, async (req, res) => {
             return sendJsonResponse(res, false, 403, "Nu sunteti autorizat!", []);
         }
 
-        const result = await (await databaseManager.getKnex())('boards').insert({ number, waiter_id: userId });
+        const result = await (await databaseManager.getKnex())('boards').insert({ number, waiter_id: userId }).returning('id');
 
         // Handle different database return formats
-        const id = Array.isArray(result) ? result[0] : result;
+        const id = Array.isArray(result) ? result[0].id : result.id;
         const board = await (await databaseManager.getKnex())('boards').where({ id }).first();
         return sendJsonResponse(res, true, 201, "Masa a fost adăugată cu succes!", { board });
     } catch (error) {
@@ -251,10 +251,10 @@ router.post('/addProductToBoard', userAuthMiddleware, async (req, res) => {
 
         const result = await (await databaseManager.getKnex())('board_items').insert({
             board_id, product_id, waiter_id: userId
-        });
+        }).returning('id');
 
         // Handle different database return formats
-        const id = Array.isArray(result) ? result[0] : result;
+        const id = Array.isArray(result) ? result[0].id : result.id;
 
         // const item = await (await databaseManager.getKnex())('board_items').where({ board_id: board_id }).first();
         // console.log('item', item);
@@ -271,9 +271,9 @@ router.post('/addProductToBoard', userAuthMiddleware, async (req, res) => {
         // }
 
         if (board) {
-            const result = await (await databaseManager.getKnex())('orders').insert({ board_id: board_id, waiter_id: userId });
+            const result = await (await databaseManager.getKnex())('orders').insert({ board_id: board_id, waiter_id: userId }).returning('id');
             // Handle different database return formats
-            const id = Array.isArray(result) ? result[0] : result;
+            const id = Array.isArray(result) ? result[0].id : result.id;
             await (await databaseManager.getKnex())('boards').update({ order_id: id }).where({ id: board_id });
             await (await databaseManager.getKnex())('order_items').insert({
                 order_id: id,

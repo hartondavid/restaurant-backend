@@ -48,10 +48,10 @@ router.post('/addProduct', userAuthMiddleware, upload.fields([{ name: 'image' }]
         });
 
         const photoUrl = await smartUpload(req.files['image'][0], 'restaurant-food');
-        const result = await (await databaseManager.getKnex())('products').insert({ name, image: photoUrl, description, price, quantity, manager_id: userId });
+        const result = await (await databaseManager.getKnex())('products').insert({ name, image: photoUrl, description, price, quantity, manager_id: userId }).returning('id');
 
         // Handle different database return formats
-        const id = Array.isArray(result) ? result[0] : result;
+        const id = Array.isArray(result) ? result[0].id : result.id;
         const product = await (await databaseManager.getKnex())('products').where({ id }).first();
         return sendJsonResponse(res, true, 201, "Produsul a fost adăugat cu succes!", product);
     } catch (error) {
