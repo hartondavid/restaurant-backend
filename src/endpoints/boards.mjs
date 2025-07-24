@@ -16,7 +16,7 @@ router.post('/addBoard', userAuthMiddleware, async (req, res) => {
             return sendJsonResponse(res, false, 400, "Numarul mesei este obligatoriu!", []);
         }
 
-        const userRights = await db('user_rights')
+        const userRights = await (await databaseManager.getKnex())('user_rights')
             .join('rights', 'user_rights.right_id', 'rights.id')
             .where('rights.right_code', 1)
             .orWhere('rights.right_code', 3)
@@ -27,9 +27,9 @@ router.post('/addBoard', userAuthMiddleware, async (req, res) => {
             return sendJsonResponse(res, false, 403, "Nu sunteti autorizat!", []);
         }
 
-        const [id] = await db('boards').insert({ number, waiter_id: userId });
+        const [id] = await (await databaseManager.getKnex())('boards').insert({ number, waiter_id: userId });
 
-        const board = await db('boards').where({ id }).first();
+        const board = await (await databaseManager.getKnex())('boards').where({ id }).first();
         return sendJsonResponse(res, true, 201, "Masa a fost adăugată cu succes!", { board });
     } catch (error) {
         return sendJsonResponse(res, false, 500, "Eroare la adăugarea mesei!", { details: error.message });
@@ -51,7 +51,7 @@ router.put('/updateBoardStatus/:boardId', userAuthMiddleware, async (req, res) =
             return sendJsonResponse(res, false, 400, "Statusul este obligatoriu!", []);
         }
 
-        const userRights = await db('user_rights')
+        const userRights = await (await databaseManager.getKnex())('user_rights')
             .join('rights', 'user_rights.right_id', 'rights.id')
             .where('rights.right_code', 1)
             .where('user_rights.user_id', userId)
@@ -61,7 +61,7 @@ router.put('/updateBoardStatus/:boardId', userAuthMiddleware, async (req, res) =
             return sendJsonResponse(res, false, 403, "Nu sunteti autorizat!", []);
         }
 
-        const board = await db('boards').where({ id: boardId }).first();
+        const board = await (await databaseManager.getKnex())('boards').where({ id: boardId }).first();
 
         if (!board) return sendJsonResponse(res, false, 404, "Masa nu există!", []);
 
@@ -70,7 +70,7 @@ router.put('/updateBoardStatus/:boardId', userAuthMiddleware, async (req, res) =
         }
 
 
-        const updated = await db('boards').where({ id: boardId }).update(updateData);
+        const updated = await (await databaseManager.getKnex())('boards').where({ id: boardId }).update(updateData);
 
 
         if (!updated) return sendJsonResponse(res, false, 404, "Masa nu a fost actualizată!", []);
@@ -90,7 +90,7 @@ router.delete('/deleteBoard/:boardId', userAuthMiddleware, async (req, res) => {
 
         const userId = req.user?.id;
 
-        const userRights = await db('user_rights')
+        const userRights = await (await databaseManager.getKnex())('user_rights')
             .join('rights', 'user_rights.right_id', 'rights.id')
             .where('rights.right_code', 3)
             .where('user_rights.user_id', userId)
@@ -100,9 +100,9 @@ router.delete('/deleteBoard/:boardId', userAuthMiddleware, async (req, res) => {
             return sendJsonResponse(res, false, 403, "Nu sunteti autorizat!", []);
         }
 
-        const board = await db('boards').where({ id: boardId }).first();
+        const board = await (await databaseManager.getKnex())('boards').where({ id: boardId }).first();
         if (!board) return sendJsonResponse(res, false, 404, "Masa nu există!", []);
-        await db('boards').where({ id: boardId }).del();
+        await (await databaseManager.getKnex())('boards').where({ id: boardId }).del();
 
 
         return sendJsonResponse(res, true, 200, "Masa a fost ștearsă cu succes!", []);
@@ -116,7 +116,7 @@ router.get('/getBoards', userAuthMiddleware, async (req, res) => {
     try {
 
 
-        const boards = await db('boards')
+        const boards = await (await databaseManager.getKnex())('boards')
             .join('users', 'boards.waiter_id', 'users.id')
             .select(
                 'boards.id',
@@ -128,7 +128,7 @@ router.get('/getBoards', userAuthMiddleware, async (req, res) => {
             )
 
         const results = await Promise.all(boards.map(async board => {
-            const boardItems = await db('boards')
+            const boardItems = await (await databaseManager.getKnex())('boards')
                 .join('board_items', 'boards.id', 'board_items.board_id')
                 .join('products', 'board_items.product_id', 'products.id')
                 .where('boards.id', board.id)
@@ -162,7 +162,7 @@ router.get('/getBoardsByWaiterId', userAuthMiddleware, async (req, res) => {
 
         const userId = req.user?.id;
 
-        const userRights = await db('user_rights')
+        const userRights = await (await databaseManager.getKnex())('user_rights')
             .join('rights', 'user_rights.right_id', 'rights.id')
             .where('user_rights.user_id', userId)
             .where('rights.right_code', 1)
@@ -185,7 +185,7 @@ router.get('/getBoardsByWaiterId', userAuthMiddleware, async (req, res) => {
             )
 
         const results = await Promise.all(boards.map(async board => {
-            const boardItems = await db('boards')
+            const boardItems = await (await databaseManager.getKnex())('boards')
                 .join('board_items', 'boards.id', 'board_items.board_id')
                 .join('products', 'board_items.product_id', 'products.id')
                 .where('boards.id', board.id)
@@ -227,7 +227,7 @@ router.post('/addProductToBoard', userAuthMiddleware, async (req, res) => {
             return sendJsonResponse(res, false, 400, "Masa si produsul sunt obligatorii!", []);
         }
 
-        const userRights = await db('user_rights')
+        const userRights = await (await databaseManager.getKnex())('user_rights')
             .join('rights', 'user_rights.right_id', 'rights.id')
             .where('rights.right_code', 1)
             .where('user_rights.user_id', userId)
@@ -239,7 +239,7 @@ router.post('/addProductToBoard', userAuthMiddleware, async (req, res) => {
 
 
 
-        const product = await db('board_items').where({ board_id, product_id }).first();
+        const product = await (await databaseManager.getKnex())('board_items').where({ board_id, product_id }).first();
 
         console.log('product', product);
 
@@ -247,7 +247,7 @@ router.post('/addProductToBoard', userAuthMiddleware, async (req, res) => {
         //     return sendJsonResponse(res, false, 400, "Produsul există deja in comanda!", []);
         // }
 
-        const [id] = await db('board_items').insert({
+        const [id] = await (await databaseManager.getKnex())('board_items').insert({
             board_id, product_id, waiter_id: userId
         });
 
@@ -258,7 +258,7 @@ router.post('/addProductToBoard', userAuthMiddleware, async (req, res) => {
 
         // }
 
-        const board = await db('boards').where({ id: board_id }).where('status', 'free').first();
+        const board = await (await databaseManager.getKnex())('boards').where({ id: board_id }).where('status', 'free').first();
 
         // if (item) {
         //     await db('boards').where({ id: board_id }).update({ status: 'reserved' });
@@ -266,16 +266,16 @@ router.post('/addProductToBoard', userAuthMiddleware, async (req, res) => {
         // }
 
         if (board) {
-            const [id] = await db('orders').insert({ board_id: board_id, waiter_id: userId });
-            await db('boards').update({ order_id: id }).where({ id: board_id });
-            await db('order_items').insert({
+            const [id] = await (await databaseManager.getKnex())('orders').insert({ board_id: board_id, waiter_id: userId });
+            await (await databaseManager.getKnex())('boards').update({ order_id: id }).where({ id: board_id });
+            await (await databaseManager.getKnex())('order_items').insert({
                 order_id: id,
                 product_id,
             });
-            await db('boards').where({ id: board_id }).update({ status: 'reserved' });
+            await (await databaseManager.getKnex())('boards').where({ id: board_id }).update({ status: 'reserved' });
         } else {
 
-            const board = await db('boards').where({ id: board_id }).first();
+            const board = await (await databaseManager.getKnex())('boards').where({ id: board_id }).first();
             await db('order_items').insert({
                 order_id: board.order_id,
                 product_id,
@@ -283,7 +283,7 @@ router.post('/addProductToBoard', userAuthMiddleware, async (req, res) => {
         }
 
 
-        const boardItem = await db('board_items').where({ id }).first();
+        const boardItem = await (await databaseManager.getKnex())('board_items').where({ id }).first();
         return sendJsonResponse(res, true, 201, "Produsul a fost adăugat cu succes!", { boardItem });
     } catch (error) {
         return sendJsonResponse(res, false, 500, "Eroare la adăugarea produsului!", { details: error.message });
@@ -302,7 +302,7 @@ router.delete('/deleteProductFromBoard/:productId/:boardId', userAuthMiddleware,
 
         const userId = req.user.id;
 
-        const userRights = await db('user_rights')
+        const userRights = await (await databaseManager.getKnex())('user_rights')
             .join('rights', 'user_rights.right_id', 'rights.id')
             .where('rights.right_code', 1)
             .where('user_rights.user_id', userId)
@@ -313,26 +313,26 @@ router.delete('/deleteProductFromBoard/:productId/:boardId', userAuthMiddleware,
         }
 
 
-        const boardItem = await db('board_items').where({ product_id: productId, board_id: boardId }).first();
+        const boardItem = await (await databaseManager.getKnex())('board_items').where({ product_id: productId, board_id: boardId }).first();
         console.log('Rezultat:', boardItem);
 
         if (!boardItem) return sendJsonResponse(res, false, 404, "Produsul nu există!", []);
-        await db('board_items').where({ product_id: productId, board_id: boardId }).del();
+        await (await databaseManager.getKnex())('board_items').where({ product_id: productId, board_id: boardId }).del();
 
 
-        const order = await db('orders').where({ board_id: boardId }).first();
+        const order = await (await databaseManager.getKnex())('orders').where({ board_id: boardId }).first();
         const orderId = order ? order.id : null;
 
         if (orderId) {
-            await db('order_items').where({ order_id: orderId, product_id: productId }).del();
+            await (await databaseManager.getKnex())('order_items').where({ order_id: orderId, product_id: productId }).del();
         }
         // if (!order) return sendJsonResponse(res, false, 404, "Comanda nu există!", []);
         // await db('orders').where({ board_id: boardId }).del();
 
-        const item = await db('board_items').where({ board_id: boardId }).first();
+        const item = await (await databaseManager.getKnex())('board_items').where({ board_id: boardId }).first();
         if (!item) {
-            await db('boards').where({ id: boardId }).update({ status: 'free', order_id: null });
-            await db('orders').where({ board_id: boardId }).del();
+            await (await databaseManager.getKnex())('boards').where({ id: boardId }).update({ status: 'free', order_id: null });
+            await (await databaseManager.getKnex())('orders').where({ board_id: boardId }).del();
 
         }
 
@@ -351,7 +351,7 @@ router.get('/getProductsByBoardId/:boardId', userAuthMiddleware, async (req, res
 
         const { boardId } = req.params;
 
-        const userRights = await db('user_rights')
+        const userRights = await (await databaseManager.getKnex())('user_rights')
             .join('rights', 'user_rights.right_id', 'rights.id')
             .where('rights.right_code', 1)
             .where('user_rights.user_id', userId)
@@ -361,7 +361,7 @@ router.get('/getProductsByBoardId/:boardId', userAuthMiddleware, async (req, res
             return sendJsonResponse(res, false, 403, "Nu sunteti autorizat!", []);
         }
 
-        const boardItems = await db('board_items')
+        const boardItems = await (await databaseManager.getKnex())('board_items')
             .join('boards', 'board_items.board_id', 'boards.id')
             .join('users', 'board_items.waiter_id', 'users.id')
             .join('products', 'board_items.product_id', 'products.id')
@@ -387,9 +387,5 @@ router.get('/getProductsByBoardId/:boardId', userAuthMiddleware, async (req, res
         return sendJsonResponse(res, false, 500, 'Eroare la preluarea produselor!', { details: error.message });
     }
 });
-
-
-
-
 
 export default router; 

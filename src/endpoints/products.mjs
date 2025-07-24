@@ -17,7 +17,7 @@ router.post('/addProduct', userAuthMiddleware, upload.fields([{ name: 'image' }]
 
         const userId = req.user.id;
 
-        const userRights = await db('user_rights')
+        const userRights = await (await databaseManager.getKnex())('user_rights')
             .join('rights', 'user_rights.right_id', 'rights.id')
             .where('rights.right_code', 3)
             .where('user_rights.user_id', userId)
@@ -37,9 +37,9 @@ router.post('/addProduct', userAuthMiddleware, upload.fields([{ name: 'image' }]
 
 
 
-        const [id] = await db('products').insert({ name, image: filePathForImagePath, description, price, quantity, manager_id: userId });
+        const [id] = await (await databaseManager.getKnex())('products').insert({ name, image: filePathForImagePath, description, price, quantity, manager_id: userId });
 
-        const product = await db('products').where({ id }).first();
+        const product = await (await databaseManager.getKnex())('products').where({ id }).first();
         return sendJsonResponse(res, true, 201, "Produsul a fost adăugat cu succes!", product);
     } catch (error) {
         return sendJsonResponse(res, false, 500, "Eroare la adăugarea produsului!", { details: error.message });
@@ -51,7 +51,7 @@ router.get('/getProducts', userAuthMiddleware, async (req, res) => {
     try {
         const userId = req.user.id;
 
-        const userRights = await db('user_rights')
+        const userRights = await (await databaseManager.getKnex())('user_rights')
             .join('rights', 'user_rights.right_id', 'rights.id')
             .where('rights.right_code', 3)
             .where('user_rights.user_id', userId)
@@ -61,7 +61,7 @@ router.get('/getProducts', userAuthMiddleware, async (req, res) => {
             return sendJsonResponse(res, false, 403, "Nu sunteti autorizat!", []);
         }
 
-        const products = await db('products')
+        const products = await (await databaseManager.getKnex())('products')
             .leftJoin('users', 'products.manager_id', 'users.id')
             .where('products.manager_id', userId)
             .select('products.*', 'users.name as manager_name');
@@ -86,7 +86,7 @@ router.put('/updateProduct/:productId', userAuthMiddleware, upload.fields([{ nam
         const { name, description, price, quantity } = req.body;
         const userId = req.user.id;
 
-        const userRights = await db('user_rights')
+        const userRights = await (await databaseManager.getKnex())('user_rights')
             .join('rights', 'user_rights.right_id', 'rights.id')
             .where('rights.right_code', 3)
             .where('user_rights.user_id', userId)
@@ -97,7 +97,7 @@ router.put('/updateProduct/:productId', userAuthMiddleware, upload.fields([{ nam
         }
 
 
-        const product = await db('products').where({ id: productId }).first();
+        const product = await (await databaseManager.getKnex())('products').where({ id: productId }).first();
 
         if (!product) return sendJsonResponse(res, false, 404, "Produsul nu există!", []);
 
@@ -116,9 +116,9 @@ router.put('/updateProduct/:productId', userAuthMiddleware, upload.fields([{ nam
             updateData.image = filePathForImagePath;
         }
 
-        await db('products').where({ id: productId }).update(updateData);
+        await (await databaseManager.getKnex())('products').where({ id: productId }).update(updateData);
 
-        const updated = await db('products').where({ id: productId }).first();
+        const updated = await (await databaseManager.getKnex())('products').where({ id: productId }).first();
         return sendJsonResponse(res, true, 200, "Produsul a fost actualizat cu succes!", { product: updated });
     } catch (error) {
         return sendJsonResponse(res, false, 500, "Eroare la actualizarea produsului!", { details: error.message });
@@ -134,7 +134,7 @@ router.delete('/deleteProduct/:productId', userAuthMiddleware, async (req, res) 
         const userId = req.user.id;
 
 
-        const userRights = await db('user_rights')
+        const userRights = await (await databaseManager.getKnex())('user_rights')
             .join('rights', 'user_rights.right_id', 'rights.id')
             .where('rights.right_code', 3)
             .where('user_rights.user_id', userId)
@@ -144,9 +144,9 @@ router.delete('/deleteProduct/:productId', userAuthMiddleware, async (req, res) 
             return sendJsonResponse(res, false, 403, "Nu sunteti autorizat!", []);
         }
 
-        const product = await db('products').where({ id: productId }).first();
+        const product = await (await databaseManager.getKnex())('products').where({ id: productId }).first();
         if (!product) return sendJsonResponse(res, false, 404, "Produsul nu există!", []);
-        await db('products').where({ id: productId }).del();
+        await (await databaseManager.getKnex())('products').where({ id: productId }).del();
 
         return sendJsonResponse(res, true, 200, "Produsul a fost șters cu succes!", []);
     } catch (error) {
@@ -244,7 +244,7 @@ router.get('/getProduct/:productId', userAuthMiddleware, async (req, res) => {
         const userId = req.user.id;
         const { productId } = req.params;
 
-        const userRights = await db('user_rights')
+        const userRights = await (await databaseManager.getKnex())('user_rights')
             .join('rights', 'user_rights.right_id', 'rights.id')
             .where('rights.right_code', 3)
             .where('user_rights.user_id', userId)
@@ -254,7 +254,7 @@ router.get('/getProduct/:productId', userAuthMiddleware, async (req, res) => {
             return sendJsonResponse(res, false, 403, "Nu sunteti autorizat!", []);
         }
 
-        const product = await db('products')
+        const product = await (await databaseManager.getKnex())('products')
             .where('products.id', productId)
             .select('products.*').first();
 
@@ -278,7 +278,7 @@ router.get('/getPaymentsByMonth', userAuthMiddleware, async (req, res) => {
 
         const userId = req.user.id;
 
-        const userRights = await db('user_rights')
+        const userRights = await (await databaseManager.getKnex())('user_rights')
             .join('rights', 'user_rights.right_id', 'rights.id')
             .where('rights.right_code', 3)
             .where('user_rights.user_id', userId)
@@ -288,7 +288,7 @@ router.get('/getPaymentsByMonth', userAuthMiddleware, async (req, res) => {
             return sendJsonResponse(res, false, 403, "Nu sunteti autorizat!", []);
         }
 
-        const products = await db('order_items')
+        const products = await (await databaseManager.getKnex())('order_items')
             .join('products', 'order_items.product_id', 'products.id')
             .select('order_items.created_at', 'products.price');
 

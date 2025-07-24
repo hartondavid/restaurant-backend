@@ -59,7 +59,7 @@ router.get('/getTeachers', userAuthMiddleware, async (req, res) => {
 
         const userId = req.user.id;
 
-        const userRights = await db('user_rights')
+        const userRights = await (await databaseManager.getKnex())('user_rights')
             .join('rights', 'user_rights.right_id', 'rights.id')
             .where('rights.right_code', 3)
             .where('user_rights.user_id', userId)
@@ -187,13 +187,13 @@ router.post('/register', async (req, res) => {
         const userEmail = await (await databaseManager.getKnex())('users').where('email', email).first();
         if (!userEmail) {
             // Insert the new user into the database
-            [newUserId] = await db('users')
+            [newUserId] = await (await databaseManager.getKnex())('users')
                 .insert(userData)
                 .returning('id');
 
             const rightCode = await (await databaseManager.getKnex())('rights').where('right_code', right_code).first();
 
-            await db('user_rights')
+            await (await databaseManager.getKnex())('user_rights')
 
                 .where({ user_id: newUserId })
                 .insert({
@@ -266,7 +266,7 @@ router.delete('/deleteUser/:userId', userAuthMiddleware, async (req, res) => {
 
         const user = await (await databaseManager.getKnex())('users').where({ id: userId }).first();
         if (!user) return sendJsonResponse(res, false, 404, "Utilizatorul nu există!", []);
-        await db('users').where({ id: userId }).del();
+        await (await databaseManager.getKnex())('users').where({ id: userId }).del();
         return sendJsonResponse(res, true, 200, "Utilizatorul a fost șters cu succes!", []);
     } catch (error) {
         return sendJsonResponse(res, false, 500, "Eroare la ștergerea ingredientului!", { details: error.message });

@@ -11,7 +11,7 @@ router.post('/addOrder', userAuthMiddleware, async (req, res) => {
 
         const userId = req.user.id;
 
-        const userRights = await db('user_rights')
+        const userRights = await (await databaseManager.getKnex())('user_rights')
             .join('rights', 'user_rights.right_id', 'rights.id')
             .where('rights.right_code', 1)
             .where('user_rights.user_id', userId)
@@ -22,9 +22,9 @@ router.post('/addOrder', userAuthMiddleware, async (req, res) => {
         }
 
 
-        const [id] = await db('orders').insert({ board_id: boardId, waiter_id: userId });
+        const [id] = await (await databaseManager.getKnex())('orders').insert({ board_id: boardId, waiter_id: userId });
 
-        const order = await db('orders').where({ id }).first();
+        const order = await (await databaseManager.getKnex())('orders').where({ id }).first();
         return sendJsonResponse(res, true, 201, "Comanda a fost adăugată cu succes!", order);
     } catch (error) {
         return sendJsonResponse(res, false, 500, "Eroare la adăugarea comenzii!", { details: error.message });
@@ -36,7 +36,7 @@ router.get('/getOrdersByWaiterId', userAuthMiddleware, async (req, res) => {
     try {
         const userId = req.user.id;
 
-        const userRights = await db('user_rights')
+        const userRights = await (await databaseManager.getKnex())('user_rights')
             .join('rights', 'user_rights.right_id', 'rights.id')
             .where('rights.right_code', 1)
             .where('user_rights.user_id', userId)
@@ -46,7 +46,7 @@ router.get('/getOrdersByWaiterId', userAuthMiddleware, async (req, res) => {
             return sendJsonResponse(res, false, 403, "Nu sunteti autorizat!", []);
         }
 
-        const orders = await db('orders')
+        const orders = await (await databaseManager.getKnex())('orders')
             .leftJoin('users', 'orders.waiter_id', 'users.id')
             .join('boards', 'orders.board_id', 'boards.id')
             .where('orders.waiter_id', userId)
@@ -59,7 +59,7 @@ router.get('/getOrdersByWaiterId', userAuthMiddleware, async (req, res) => {
         }
 
         const results = await Promise.all(orders.map(async order => {
-            const orderItems = await db('order_items')
+            const orderItems = await (await databaseManager.getKnex())('order_items')
                 .leftJoin('products', 'order_items.product_id', 'products.id')
                 .where('order_items.order_id', order.id)
                 .select(
@@ -88,7 +88,7 @@ router.get('/getOrders', userAuthMiddleware, async (req, res) => {
     try {
         const userId = req.user.id;
 
-        const userRights = await db('user_rights')
+        const userRights = await (await databaseManager.getKnex())('user_rights')
             .join('rights', 'user_rights.right_id', 'rights.id')
             .where('rights.right_code', 3)
             .orWhere('rights.right_code', 2)
@@ -99,7 +99,7 @@ router.get('/getOrders', userAuthMiddleware, async (req, res) => {
             return sendJsonResponse(res, false, 403, "Nu sunteti autorizat!", []);
         }
 
-        const orders = await db('orders')
+        const orders = await (await databaseManager.getKnex())('orders')
             .leftJoin('users', 'orders.waiter_id', 'users.id')
             .join('boards', 'orders.board_id', 'boards.id')
             .whereNot('orders.status', 'done')
@@ -145,7 +145,7 @@ router.delete('/deleteOrder/:orderId', userAuthMiddleware, async (req, res) => {
         const userId = req.user.id;
 
 
-        const userRights = await db('user_rights')
+        const userRights = await (await databaseManager.getKnex())('user_rights')
             .join('rights', 'user_rights.right_id', 'rights.id')
             .where('rights.right_code', 1)
             .where('user_rights.user_id', userId)
@@ -155,9 +155,9 @@ router.delete('/deleteOrder/:orderId', userAuthMiddleware, async (req, res) => {
             return sendJsonResponse(res, false, 403, "Nu sunteti autorizat!", []);
         }
 
-        const order = await db('orders').where({ id: orderId }).first();
+        const order = await (await databaseManager.getKnex())('orders').where({ id: orderId }).first();
         if (!order) return sendJsonResponse(res, false, 404, "Comanda nu există!", []);
-        await db('orders').where({ id: orderId }).del();
+        await (await databaseManager.getKnex())('orders').where({ id: orderId }).del();
 
         return sendJsonResponse(res, true, 200, "Comanda a fost ștearsă cu succes!", []);
     } catch (error) {
@@ -175,7 +175,7 @@ router.put('/updateOrderStatus/:orderId', userAuthMiddleware, async (req, res) =
 
         const userId = req.user?.id;
 
-        const userRights = await db('user_rights')
+        const userRights = await (await databaseManager.getKnex())('user_rights')
             .join('rights', 'user_rights.right_id', 'rights.id')
             .where('rights.right_code', 1)
             .orWhere('rights.right_code', 2)
@@ -186,7 +186,7 @@ router.put('/updateOrderStatus/:orderId', userAuthMiddleware, async (req, res) =
             return sendJsonResponse(res, false, 403, "Nu sunteti autorizat!", []);
         }
 
-        const order = await db('orders').where({ id: orderId }).first();
+        const order = await (await databaseManager.getKnex())('orders').where({ id: orderId }).first();
 
         if (!order) return sendJsonResponse(res, false, 404, "Comanda nu există!", []);
 
@@ -195,14 +195,14 @@ router.put('/updateOrderStatus/:orderId', userAuthMiddleware, async (req, res) =
         }
 
 
-        const updated = await db('orders').where({ id: orderId }).update(updateData);
+        const updated = await (await databaseManager.getKnex())('orders').where({ id: orderId }).update(updateData);
 
 
         if (!updated) return sendJsonResponse(res, false, 404, "Masa nu a fost actualizată!", []);
 
         if (status === 'done') {
-            await db('boards').where({ id: order.board_id }).update({ status: 'free', order_id: null });
-            await db('board_items').where({ board_id: order.board_id }).del();
+            await (await databaseManager.getKnex())('boards').where({ id: order.board_id }).update({ status: 'free', order_id: null });
+            await (await databaseManager.getKnex())('board_items').where({ board_id: order.board_id }).del();
 
         }
 
@@ -216,7 +216,7 @@ router.get('/getFinishedOrdersByWaiterId', userAuthMiddleware, async (req, res) 
     try {
         const userId = req.user.id;
 
-        const userRights = await db('user_rights')
+        const userRights = await (await databaseManager.getKnex())('user_rights')
             .join('rights', 'user_rights.right_id', 'rights.id')
             .where('rights.right_code', 1)
             .where('user_rights.user_id', userId)
@@ -226,7 +226,7 @@ router.get('/getFinishedOrdersByWaiterId', userAuthMiddleware, async (req, res) 
             return sendJsonResponse(res, false, 403, "Nu sunteti autorizat!", []);
         }
 
-        const orders = await db('orders')
+        const orders = await (await databaseManager.getKnex())('orders')
             .leftJoin('users', 'orders.waiter_id', 'users.id')
             .join('boards', 'orders.board_id', 'boards.id')
             .where('orders.status', 'done')
@@ -239,7 +239,7 @@ router.get('/getFinishedOrdersByWaiterId', userAuthMiddleware, async (req, res) 
         }
 
         const results = await Promise.all(orders.map(async order => {
-            const orderItems = await db('order_items')
+            const orderItems = await (await databaseManager.getKnex())('order_items')
                 .leftJoin('products', 'order_items.product_id', 'products.id')
                 .where('order_items.order_id', order.id)
                 .select(
@@ -267,7 +267,7 @@ router.get('/getFinishedOrders', userAuthMiddleware, async (req, res) => {
     try {
         const userId = req.user.id;
 
-        const userRights = await db('user_rights')
+        const userRights = await (await databaseManager.getKnex())('user_rights')
             .join('rights', 'user_rights.right_id', 'rights.id')
             .where('rights.right_code', 3)
             .orWhere('rights.right_code', 2)
@@ -278,7 +278,7 @@ router.get('/getFinishedOrders', userAuthMiddleware, async (req, res) => {
             return sendJsonResponse(res, false, 403, "Nu sunteti autorizat!", []);
         }
 
-        const orders = await db('orders')
+        const orders = await (await databaseManager.getKnex())('orders')
             .leftJoin('users', 'orders.waiter_id', 'users.id')
             .join('boards', 'orders.board_id', 'boards.id')
             .where('orders.status', 'done')
@@ -290,7 +290,7 @@ router.get('/getFinishedOrders', userAuthMiddleware, async (req, res) => {
         }
 
         const results = await Promise.all(orders.map(async order => {
-            const orderItems = await db('order_items')
+            const orderItems = await (await databaseManager.getKnex())('order_items')
                 .leftJoin('products', 'order_items.product_id', 'products.id')
                 .where('order_items.order_id', order.id)
                 .select(
