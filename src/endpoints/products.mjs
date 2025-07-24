@@ -3,7 +3,7 @@ import databaseManager from "../utils/database.mjs";
 import { sendJsonResponse } from "../utils/utilFunctions.mjs";
 import { userAuthMiddleware } from "../utils/middlewares/userAuthMiddleware.mjs";
 import createMulter from "../utils/uploadUtils.mjs";
-import { smartUpload, deleteFromBlob } from "../utils/smartUpload.mjs";
+import { smartUpload, deleteFromBlob } from "../utils/uploadUtils.mjs";
 
 const upload = createMulter('public/uploads/products', ['image/jpeg', 'image/png', 'image/gif', 'application/pdf']);
 
@@ -34,9 +34,9 @@ router.post('/addProduct', userAuthMiddleware, upload.fields([{ name: 'image' }]
         }
 
 
-        await smartUpload(req.files['image'][0], 'restaurant-food');
 
-        const [id] = await (await databaseManager.getKnex())('products').insert({ name, image: filePathForImagePath, description, price, quantity, manager_id: userId });
+        const photoUrl = await smartUpload(req.files['image'][0], 'restaurant-food');
+        const [id] = await (await databaseManager.getKnex())('products').insert({ name, image: photoUrl, description, price, quantity, manager_id: userId });
 
         const product = await (await databaseManager.getKnex())('products').where({ id }).first();
         return sendJsonResponse(res, true, 201, "Produsul a fost adăugat cu succes!", product);
@@ -60,7 +60,7 @@ router.get('/getProducts', userAuthMiddleware, async (req, res) => {
             return sendJsonResponse(res, false, 403, "Nu sunteti autorizat!", []);
         }
 
-        const products = await (await databaseManager.getKnex())('food')
+        const products = await (await databaseManager.getKnex())('products')
             .leftJoin('users', 'products.manager_id', 'users.id')
             .where('products.manager_id', userId)
             .select('products.*', 'users.name as manager_name');
@@ -167,7 +167,7 @@ router.delete('/deleteProduct/:productId', userAuthMiddleware, async (req, res) 
 
 //         const { boardId } = req.params;
 
-//         const userRights = await databaseManager('user_rights')
+//         const userRights = await (await databaseManager.getKnex())('user_rights')
 //             .join('rights', 'user_rights.right_id', 'rights.id')
 //             .where('rights.right_code', 3)
 //             .where('user_rights.user_id', userId)
@@ -177,7 +177,7 @@ router.delete('/deleteProduct/:productId', userAuthMiddleware, async (req, res) 
 //             return sendJsonResponse(res, false, 403, "Nu sunteti autorizat!", []);
 //         }
 
-//         const products = await databaseManager('products')
+//         const products = await (await databaseManager.getKnex())('products')
 //             .leftJoin('users', 'products.manager_id', 'users.id')
 //             .where('products.manager_id', userId)
 //             .whereNotIn('boards.id', databaseManager('orders').where('orders.board_id', boardId))
@@ -210,7 +210,7 @@ router.get('/searchProduct', userAuthMiddleware, async (req, res) => {
         const userId = req.user.id;
 
 
-        const userRights = await databaseManager('user_rights')
+        const userRights = await (await databaseManager.getKnex())('user_rights')
             .join('rights', 'user_rights.right_id', 'rights.id')
             .where('rights.right_code', 1)
             .where('user_rights.user_id', userId)
@@ -222,7 +222,7 @@ router.get('/searchProduct', userAuthMiddleware, async (req, res) => {
 
 
         // Query the database to search for employees where name contains the searchField
-        const products = await databaseManager('products')
+        const products = await (await databaseManager.getKnex())('products')
             .where(function () {
                 this.where('products.name', 'like', `%${searchField}%`)
                     .orWhere('products.description', 'like', `%${searchField}%`)
@@ -230,7 +230,7 @@ router.get('/searchProduct', userAuthMiddleware, async (req, res) => {
                     .orWhere('products.quantity', 'like', `%${searchField}%`)
             })
             // .join('orders', 'products.id', 'orders.product_id')
-            // .whereNotIn('products.id', databaseManager('orders').where('orders.board_id', boardId))
+            // .whereNotIn('products.id', (await databaseManager.getKnex())('orders').where('orders.board_id', boardId))
             .select('products.*');
 
 

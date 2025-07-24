@@ -111,7 +111,7 @@ router.get('/getOrders', userAuthMiddleware, async (req, res) => {
         }
 
         const results = await Promise.all(orders.map(async order => {
-            const orderItems = await databaseManager('order_items')
+            const orderItems = await (await databaseManager.getKnex())('order_items')
                 .leftJoin('products', 'order_items.product_id', 'products.id')
                 .where('order_items.order_id', order.id)
                 .select(

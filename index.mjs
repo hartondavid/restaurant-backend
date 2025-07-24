@@ -433,6 +433,21 @@ app.post('/login', async (req, res) => {
     }
 });
 
+// Load API routes
+try {
+    console.log('📡 Loading API routes...');
+    const { default: apiRouter } = await import('./src/routes/apiRoute.mjs');
+    app.use('/api', apiRouter);
+    apiRoutes = true;
+    console.log('✅ Database API routes loaded successfully');
+} catch (error) {
+    console.error('❌ Failed to load API routes:', error.message);
+    console.log('⚠️ Database API routes not available, using simplified version');
+    apiRoutes = false;
+}
+
+console.log('📡 Full API available at /api/*');
+
 // 404 handler for undefined routes
 app.use('*', (req, res) => {
     console.log('404 route accessed:', req.originalUrl);
