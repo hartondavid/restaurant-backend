@@ -17,32 +17,12 @@ try {
 // Basic middleware
 app.use(express.json());
 
-// Add CORS for frontend access
-app.use(cors({
-    origin: true, // Allow all origins temporarily
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Auth-Token'],
-    exposedHeaders: ['X-Auth-Token'],
-    optionsSuccessStatus: 200 // Some legacy browsers (IE11, various SmartTVs) choke on 204
-}));
+// Simple CORS configuration
+app.use(cors());
 
-// Global OPTIONS handler for all routes
+// Handle OPTIONS requests
 app.options('*', (req, res) => {
-    res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Auth-Token');
-    res.header('Access-Control-Allow-Credentials', 'true');
     res.status(200).end();
-});
-
-// Add CORS headers to all responses
-app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Auth-Token');
-    res.header('Access-Control-Allow-Credentials', 'true');
-    next();
 });
 
 // Run migrations before starting the server
