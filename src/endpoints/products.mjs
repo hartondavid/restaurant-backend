@@ -247,6 +247,7 @@ router.get('/searchProduct', userAuthMiddleware, async (req, res) => {
                     this.orWhere('products.price', searchNumber)
                         .orWhere('products.quantity', searchNumber);
                 }
+
             })
             .select('products.*');
 
