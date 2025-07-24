@@ -17,12 +17,12 @@ try {
 // Basic middleware
 app.use(express.json());
 
-// Simple CORS configuration
-app.use(cors());
-
-// Handle OPTIONS requests
-app.options('*', (req, res) => {
-    res.status(200).end();
+// Disable CORS temporarily for testing
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', '*');
+    res.header('Access-Control-Allow-Headers', '*');
+    next();
 });
 
 // Run migrations before starting the server
@@ -162,6 +162,15 @@ app.get('/test', (req, res) => {
         port: process.env.PORT || 8080,
         database: apiRoutes ? 'connected' : 'not connected (simplified version)'
     });
+});
+
+// CORS test endpoint
+app.get('/cors-test', (req, res) => {
+    res.json({ message: 'CORS test successful', timestamp: new Date().toISOString() });
+});
+
+app.options('/cors-test', (req, res) => {
+    res.status(200).end();
 });
 
 // Root route
