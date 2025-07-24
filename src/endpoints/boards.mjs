@@ -368,7 +368,9 @@ router.get('/getProductsByBoardId/:boardId', userAuthMiddleware, async (req, res
         }
 
         // Convert boardId to number if it's a string
-        const boardIdNumber = Number(boardId)
+        const boardIdNumber = Number(boardId);
+        console.log('🔍 Debug - boardIdNumber:', boardIdNumber);
+        console.log('🔍 Debug - boardIdNumber type:', typeof boardIdNumber);
 
 
         const userRights = await (await databaseManager.getKnex())('user_rights')
