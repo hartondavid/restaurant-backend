@@ -19,9 +19,15 @@ app.use(express.json());
 
 // Add CORS for frontend access
 app.use(cors({
-    origin: '*', // In production, specify your frontend domain
+    origin: [
+        'https://restaurant.davidharton.online',
+        'http://localhost:3000',
+        'http://localhost:3001',
+        'http://localhost:5173'
+    ],
+    credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Auth-Token'],
     exposedHeaders: ['X-Auth-Token']
 }));
 
