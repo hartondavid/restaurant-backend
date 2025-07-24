@@ -32,11 +32,8 @@ router.post('/addProduct', userAuthMiddleware, upload.fields([{ name: 'image' }]
             return sendJsonResponse(res, false, 400, "Image is required", null);
         }
 
-        if (!req.files || !req.files['photo']) {
-            return sendJsonResponse(res, false, 400, "Image is required", null);
-        }
 
-        await smartUpload(req.files['photo'][0], 'restaurant-food');
+        await smartUpload(req.files['image'][0], 'restaurant-food');
 
         const [id] = await (await databaseManager.getKnex())('products').insert({ name, image: filePathForImagePath, description, price, quantity, manager_id: userId });
 
@@ -111,9 +108,9 @@ router.put('/updateProduct/:productId', userAuthMiddleware, upload.fields([{ nam
         };
 
 
-        if (req.files && req.files['photo'] && req.files['photo'][0]) {
+        if (req.files && req.files['image'] && req.files['image'][0]) {
             // Use smart upload function that automatically chooses storage method
-            const photoUrl = await smartUpload(req.files['photo'][0], 'restaurant-food');
+            const photoUrl = await smartUpload(req.files['image'][0], 'restaurant-food');
 
             updateData.photo = photoUrl;
         }
