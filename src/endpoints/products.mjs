@@ -36,7 +36,7 @@ router.post('/addProduct', userAuthMiddleware, upload.fields([{ name: 'image' }]
             return sendJsonResponse(res, false, 400, "Image is required", null);
         }
 
-        await smartUpload(req.files['photo'][0], 'products');
+        await smartUpload(req.files['photo'][0], 'restaurant-food');
 
         const [id] = await (await databaseManager.getKnex())('products').insert({ name, image: filePathForImagePath, description, price, quantity, manager_id: userId });
 
@@ -62,7 +62,7 @@ router.get('/getProducts', userAuthMiddleware, async (req, res) => {
             return sendJsonResponse(res, false, 403, "Nu sunteti autorizat!", []);
         }
 
-        const products = await (await databaseManager.getKnex())('products')
+        const products = await (await databaseManager.getKnex())('food')
             .leftJoin('users', 'products.manager_id', 'users.id')
             .where('products.manager_id', userId)
             .select('products.*', 'users.name as manager_name');
@@ -113,7 +113,7 @@ router.put('/updateProduct/:productId', userAuthMiddleware, upload.fields([{ nam
 
         if (req.files && req.files['photo'] && req.files['photo'][0]) {
             // Use smart upload function that automatically chooses storage method
-            const photoUrl = await smartUpload(req.files['photo'][0], 'products');
+            const photoUrl = await smartUpload(req.files['photo'][0], 'restaurant-food');
 
             updateData.photo = photoUrl;
         }
