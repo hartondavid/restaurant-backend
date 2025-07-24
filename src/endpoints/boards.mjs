@@ -1,12 +1,12 @@
 import { Router } from "express";
-import db from "../utils/database.mjs";
+import databaseManager from "../utils/database.mjs";
 import { sendJsonResponse } from "../utils/utilFunctions.mjs";
 import { userAuthMiddleware } from "../utils/middlewares/userAuthMiddleware.mjs";
 
 const router = Router();
 
 // Adaugă o masa
-router.post('/addBoard', userAuthMiddleware, async (req, res) => {
+router.post('/addatabaseManageroard', userAuthMiddleware, async (req, res) => {
 
     try {
         const { number } = req.body;
@@ -171,7 +171,7 @@ router.get('/getBoardsByWaiterId', userAuthMiddleware, async (req, res) => {
         if (!userRights) {
             return sendJsonResponse(res, false, 403, "Nu sunteti autorizat!", []);
         }
-        const boards = await db('boards')
+        const boards = await databaseManager('boards')
             .join('users', 'boards.waiter_id', 'users.id')
             .join('user_rights', 'users.id', 'user_rights.user_id')
             .where('users.id', req.user.id)
@@ -251,17 +251,17 @@ router.post('/addProductToBoard', userAuthMiddleware, async (req, res) => {
             board_id, product_id, waiter_id: userId
         });
 
-        // const item = await db('board_items').where({ board_id: board_id }).first();
+        // const item = await databaseManager('board_items').where({ board_id: board_id }).first();
         // console.log('item', item);
         // if (item) {
-        //     await db('boards').where({ id: board_id }).update({ status: 'reserved' });
+        //     await databaseManager('boards').where({ id: board_id }).update({ status: 'reserved' });
 
         // }
 
         const board = await (await databaseManager.getKnex())('boards').where({ id: board_id }).where('status', 'free').first();
 
         // if (item) {
-        //     await db('boards').where({ id: board_id }).update({ status: 'reserved' });
+        //     await databaseManager('boards').where({ id: board_id }).update({ status: 'reserved' });
 
         // }
 
@@ -276,7 +276,7 @@ router.post('/addProductToBoard', userAuthMiddleware, async (req, res) => {
         } else {
 
             const board = await (await databaseManager.getKnex())('boards').where({ id: board_id }).first();
-            await db('order_items').insert({
+            await databaseManager('order_items').insert({
                 order_id: board.order_id,
                 product_id,
             });
@@ -327,7 +327,7 @@ router.delete('/deleteProductFromBoard/:productId/:boardId', userAuthMiddleware,
             await (await databaseManager.getKnex())('order_items').where({ order_id: orderId, product_id: productId }).del();
         }
         // if (!order) return sendJsonResponse(res, false, 404, "Comanda nu există!", []);
-        // await db('orders').where({ board_id: boardId }).del();
+        // await databaseManager('orders').where({ board_id: boardId }).del();
 
         const item = await (await databaseManager.getKnex())('board_items').where({ board_id: boardId }).first();
         if (!item) {

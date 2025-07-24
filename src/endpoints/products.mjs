@@ -1,5 +1,5 @@
 import { Router } from "express";
-import db from "../utils/database.mjs";
+import databaseManager from "../utils/database.mjs";
 import { sendJsonResponse } from "../utils/utilFunctions.mjs";
 import { userAuthMiddleware } from "../utils/middlewares/userAuthMiddleware.mjs";
 import createMulter from "../utils/uploadUtils.mjs";
@@ -160,7 +160,7 @@ router.delete('/deleteProduct/:productId', userAuthMiddleware, async (req, res) 
 
 //         const { boardId } = req.params;
 
-//         const userRights = await db('user_rights')
+//         const userRights = await databaseManager('user_rights')
 //             .join('rights', 'user_rights.right_id', 'rights.id')
 //             .where('rights.right_code', 3)
 //             .where('user_rights.user_id', userId)
@@ -170,10 +170,10 @@ router.delete('/deleteProduct/:productId', userAuthMiddleware, async (req, res) 
 //             return sendJsonResponse(res, false, 403, "Nu sunteti autorizat!", []);
 //         }
 
-//         const products = await db('products')
+//         const products = await databaseManager('products')
 //             .leftJoin('users', 'products.manager_id', 'users.id')
 //             .where('products.manager_id', userId)
-//             .whereNotIn('boards.id', db('orders').where('orders.board_id', boardId))
+//             .whereNotIn('boards.id', databaseManager('orders').where('orders.board_id', boardId))
 //             .select('products.*');
 
 
@@ -203,7 +203,7 @@ router.get('/searchProduct', userAuthMiddleware, async (req, res) => {
         const userId = req.user.id;
 
 
-        const userRights = await db('user_rights')
+        const userRights = await databaseManager('user_rights')
             .join('rights', 'user_rights.right_id', 'rights.id')
             .where('rights.right_code', 1)
             .where('user_rights.user_id', userId)
@@ -215,7 +215,7 @@ router.get('/searchProduct', userAuthMiddleware, async (req, res) => {
 
 
         // Query the database to search for employees where name contains the searchField
-        const products = await db('products')
+        const products = await databaseManager('products')
             .where(function () {
                 this.where('products.name', 'like', `%${searchField}%`)
                     .orWhere('products.description', 'like', `%${searchField}%`)
@@ -223,7 +223,7 @@ router.get('/searchProduct', userAuthMiddleware, async (req, res) => {
                     .orWhere('products.quantity', 'like', `%${searchField}%`)
             })
             // .join('orders', 'products.id', 'orders.product_id')
-            // .whereNotIn('products.id', db('orders').where('orders.board_id', boardId))
+            // .whereNotIn('products.id', databaseManager('orders').where('orders.board_id', boardId))
             .select('products.*');
 
 
