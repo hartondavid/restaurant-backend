@@ -235,16 +235,19 @@ router.get('/searchProduct', userAuthMiddleware, async (req, res) => {
         }
 
 
-        // Query the database to search for employees where name contains the searchField
+        // Query the database to search for products
         const products = await (await databaseManager.getKnex())('products')
             .where(function () {
                 this.where('products.name', 'like', `%${searchField}%`)
-                    .orWhere('products.description', 'like', `%${searchField}%`)
-                    .orWhere('products.price', 'like', `%${searchField}%`)
-                    .orWhere('products.quantity', 'like', `%${searchField}%`)
+                    .orWhere('products.description', 'like', `%${searchField}%`);
+
+                // Only search in numeric fields if the search term is a valid number
+                const searchNumber = parseFloat(searchField);
+                if (!isNaN(searchNumber)) {
+                    this.orWhere('products.price', searchNumber)
+                        .orWhere('products.quantity', searchNumber);
+                }
             })
-            // .join('orders', 'products.id', 'orders.product_id')
-            // .whereNotIn('products.id', (await databaseManager.getKnex())('orders').where('orders.board_id', boardId))
             .select('products.*');
 
 
