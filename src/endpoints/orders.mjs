@@ -135,8 +135,6 @@ router.get('/getOrders', userAuthMiddleware, async (req, res) => {
     }
 });
 
-
-
 // Șterge o livrare
 router.delete('/deleteOrder/:orderId', userAuthMiddleware, async (req, res) => {
 
