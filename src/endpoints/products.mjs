@@ -113,7 +113,7 @@ router.put('/updateProduct/:productId', userAuthMiddleware, upload.fields([{ nam
             // Use smart upload function that automatically chooses storage method
             const photoUrl = await smartUpload(req.files['image'][0], 'restaurant-food');
 
-            updateData.photo = photoUrl;
+            updateData.image = photoUrl;
         }
 
         await (await databaseManager.getKnex())('products').where({ id: productId }).update(updateData);
@@ -148,9 +148,9 @@ router.delete('/deleteProduct/:productId', userAuthMiddleware, async (req, res) 
         if (!product) return sendJsonResponse(res, false, 404, "Produsul nu există!", []);
 
         // Delete the image from Vercel Blob if it's a Blob URL
-        if (product.photo) {
+        if (product.image) {
 
-            await deleteFromBlob(product.photo);
+            await deleteFromBlob(product.image);
         }
 
         await (await databaseManager.getKnex())('products').where({ id: productId }).del();
