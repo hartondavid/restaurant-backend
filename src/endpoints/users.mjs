@@ -6,6 +6,11 @@ import db from "../utils/database.mjs";
 
 const router = Router();
 
+// Handle OPTIONS requests for CORS preflight
+router.options('*', (req, res) => {
+    res.status(200).end();
+});
+
 // Login
 router.post('/login', async (req, res) => {
     const { email, password } = req.body;
