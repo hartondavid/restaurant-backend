@@ -172,26 +172,10 @@ const smartUpload = async (file, folder = 'cakes') => {
         if (!file.path) {
             throw new Error('File path not available for local storage');
         }
-
-        // Create a unique filename
-        const fileName = `${Date.now()}-${file.originalname}`;
-        const uploadDir = path.join('public', 'uploads', folder);
-        const filePath = path.join(uploadDir, fileName);
-
-        // Ensure directory exists
-        if (!fs.existsSync(uploadDir)) {
-            fs.mkdirSync(uploadDir, { recursive: true });
-        }
-
-        // Copy file to destination if it's not already there
-        if (file.path !== filePath) {
-            fs.copyFileSync(file.path, filePath);
-        }
-
-        // Return relative path for database storage
-        const relativePath = path.join('uploads', folder, fileName).replace(/\\/g, '/');
-        console.log('🔍 smartUpload - Local file path processed:', relativePath);
-        return relativePath;
+        let filePathForImagePath = file.path;
+        filePathForImagePath = filePathForImagePath.replace(/^public[\\/]/, '');
+        console.log('🔍 smartUpload - Local file path processed:', filePathForImagePath);
+        return filePathForImagePath;
     }
 };
 

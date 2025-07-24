@@ -33,11 +33,25 @@ router.post('/addProduct', userAuthMiddleware, upload.fields([{ name: 'image' }]
             return sendJsonResponse(res, false, 400, "Image is required", null);
         }
 
-
+        console.log('🔍 File upload info:', {
+            hasFiles: !!req.files,
+            imageField: !!req.files['image'],
+            imageArray: req.files['image'] ? req.files['image'].length : 0,
+            firstImage: req.files['image'] ? {
+                fieldname: req.files['image'][0].fieldname,
+                originalname: req.files['image'][0].originalname,
+                mimetype: req.files['image'][0].mimetype,
+                size: req.files['image'][0].size,
+                path: req.files['image'][0].path,
+                buffer: !!req.files['image'][0].buffer
+            } : null
+        });
 
         const photoUrl = await smartUpload(req.files['image'][0], 'restaurant-food');
-        const [id] = await (await databaseManager.getKnex())('products').insert({ name, image: photoUrl, description, price, quantity, manager_id: userId });
+        const result = await (await databaseManager.getKnex())('products').insert({ name, image: photoUrl, description, price, quantity, manager_id: userId });
 
+        // Handle different database return formats
+        const id = Array.isArray(result) ? result[0] : result;
         const product = await (await databaseManager.getKnex())('products').where({ id }).first();
         return sendJsonResponse(res, true, 201, "Produsul a fost adăugat cu succes!", product);
     } catch (error) {

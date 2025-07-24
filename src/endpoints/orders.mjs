@@ -22,8 +22,10 @@ router.post('/addOrder', userAuthMiddleware, async (req, res) => {
         }
 
 
-        const [id] = await (await databaseManager.getKnex())('orders').insert({ board_id: boardId, waiter_id: userId });
+        const result = await (await databaseManager.getKnex())('orders').insert({ board_id: boardId, waiter_id: userId });
 
+        // Handle different database return formats
+        const id = Array.isArray(result) ? result[0] : result;
         const order = await (await databaseManager.getKnex())('orders').where({ id }).first();
         return sendJsonResponse(res, true, 201, "Comanda a fost adăugată cu succes!", order);
     } catch (error) {
