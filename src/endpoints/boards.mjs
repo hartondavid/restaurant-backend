@@ -362,13 +362,15 @@ router.get('/getProductsByBoardId/:boardId', userAuthMiddleware, async (req, res
         console.log('🔍 Debug - req.params:', req.params);
         console.log('🔍 Debug - boardId:', boardId);
         console.log('🔍 Debug - boardId type:', typeof boardId);
+        console.log('🔍 Debug - boardId length:', boardId ? boardId.length : 'undefined');
+        console.log('🔍 Debug - boardId char codes:', boardId ? Array.from(boardId).map(c => c.charCodeAt(0)) : 'undefined');
 
         if (!boardId) {
             return sendJsonResponse(res, false, 400, 'boardId parameter is required!', null);
         }
 
         // Convert boardId to number if it's a string
-        const boardIdNumber = Number(boardId);
+        const boardIdNumber = parseInt(boardId.trim(), 10);
         console.log('🔍 Debug - boardIdNumber:', boardIdNumber);
         console.log('🔍 Debug - boardIdNumber type:', typeof boardIdNumber);
 
