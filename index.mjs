@@ -19,16 +19,12 @@ app.use(express.json());
 
 // Add CORS for frontend access
 app.use(cors({
-    origin: [
-        'https://restaurant.davidharton.online',
-        'http://localhost:3000',
-        'http://localhost:3001',
-        'http://localhost:5173'
-    ],
+    origin: true, // Allow all origins temporarily
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Auth-Token'],
-    exposedHeaders: ['X-Auth-Token']
+    exposedHeaders: ['X-Auth-Token'],
+    optionsSuccessStatus: 200 // Some legacy browsers (IE11, various SmartTVs) choke on 204
 }));
 
 // Run migrations before starting the server
