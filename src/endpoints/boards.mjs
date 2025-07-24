@@ -358,6 +358,21 @@ router.get('/getProductsByBoardId/:boardId', userAuthMiddleware, async (req, res
 
         const { boardId } = req.params;
 
+        // Add validation and logging
+        console.log('🔍 Debug - req.params:', req.params);
+        console.log('🔍 Debug - boardId:', boardId);
+        console.log('🔍 Debug - boardId type:', typeof boardId);
+
+        if (!boardId) {
+            return sendJsonResponse(res, false, 400, 'boardId parameter is required!', null);
+        }
+
+        // Convert boardId to number if it's a string
+        const boardIdNumber = parseInt(boardId, 10);
+        if (isNaN(boardIdNumber)) {
+            return sendJsonResponse(res, false, 400, 'boardId must be a valid number!', null);
+        }
+
         const userRights = await (await databaseManager.getKnex())('user_rights')
             .join('rights', 'user_rights.right_id', 'rights.id')
             .where('rights.right_code', 1)
@@ -372,7 +387,7 @@ router.get('/getProductsByBoardId/:boardId', userAuthMiddleware, async (req, res
             .join('boards', 'board_items.board_id', 'boards.id')
             .join('users', 'board_items.waiter_id', 'users.id')
             .join('products', 'board_items.product_id', 'products.id')
-            .where('board_items.board_id', boardId)
+            .where('board_items.board_id', boardIdNumber)
             .select(
                 'board_items.product_id',
                 'board_items.board_id',
