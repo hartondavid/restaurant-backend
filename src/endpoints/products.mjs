@@ -3,6 +3,7 @@ import databaseManager from "../utils/database.mjs";
 import { sendJsonResponse } from "../utils/utilFunctions.mjs";
 import { userAuthMiddleware } from "../utils/middlewares/userAuthMiddleware.mjs";
 import createMulter from "../utils/uploadUtils.mjs";
+import { smartUpload, deleteFromBlob } from "../utils/smartUpload.mjs";
 
 const upload = createMulter('public/uploads/products', ['image/jpeg', 'image/png', 'image/gif', 'application/pdf']);
 
