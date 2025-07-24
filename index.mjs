@@ -3,7 +3,7 @@
 import express from "express"
 import dotenv from 'dotenv'
 import cors from 'cors'
-import databaseManager from './src/utils/database.mjs'
+import db from './src/utils/database.mjs'
 
 const app = express();
 
@@ -34,7 +34,7 @@ const runMigrations = async () => {
 
         // First, test database connection
         console.log('🔌 Testing database connection...');
-        const knex = await databaseManager.getKnex();
+        const knex = await db();
         console.log('✅ Database connection successful');
 
         // Check if database exists and show tables
@@ -46,7 +46,7 @@ const runMigrations = async () => {
         }
 
         console.log('🔄 Running migrations...');
-        await databaseManager.runMigrations();
+        await knex.migrate.latest();
         console.log('✅ Migrations completed successfully');
 
         // Check tables after migrations
@@ -59,7 +59,7 @@ const runMigrations = async () => {
 
         // Run seeds after migrations
         console.log('🌱 Running database seeds...');
-        await databaseManager.runSeeds();
+        await knex.seed.run();
         console.log('✅ Seeds completed successfully');
 
         // Check data after seeds
@@ -84,7 +84,7 @@ const runSeeds = async (options = {}) => {
         console.log('🌱 Starting seed execution...');
 
         // Get database connection
-        const knex = await databaseManager.getKnex();
+        const knex = await db();
 
         // Default options
         const seedOptions = {
@@ -239,11 +239,11 @@ app.post('/run-seeds', async (req, res) => {
         console.log('🌱 Manually running seeds...');
 
         // Run seeds
-        await databaseManager.runSeeds();
+        const knex = await db();
+        await knex.seed.run();
         console.log('✅ Manual seeds completed successfully');
 
         // Get all users after seeding
-        const knex = await databaseManager.getKnex();
         const users = await knex('users').select('id', 'name', 'email', 'phone');
         console.log('📋 Users after manual seeding:', users);
 
@@ -301,7 +301,7 @@ app.post('/test-token', async (req, res) => {
         console.log('✅ Token verified:', decodedToken);
 
         // Get user from database
-        const knex = await databaseManager.getKnex();
+        const knex = await db();
         const user = await knex('users').where({ id: decodedToken.id }).first();
 
         if (!user) {
@@ -353,7 +353,7 @@ app.post('/login', async (req, res) => {
         console.log('🔍 Login attempt for:', email);
 
         // Get user from database
-        const knex = await databaseManager.getKnex();
+        const knex = await db();
         const user = await knex('users').where({ email }).first();
 
         if (!user) {
