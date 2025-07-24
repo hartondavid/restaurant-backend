@@ -369,9 +369,7 @@ router.get('/getProductsByBoardId/:boardId', userAuthMiddleware, async (req, res
 
         // Convert boardId to number if it's a string
         const boardIdNumber = parseInt(boardId, 10);
-        if (isNaN(boardIdNumber)) {
-            return sendJsonResponse(res, false, 400, 'boardId must be a valid number!', null);
-        }
+
 
         const userRights = await (await databaseManager.getKnex())('user_rights')
             .join('rights', 'user_rights.right_id', 'rights.id')
