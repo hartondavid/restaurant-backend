@@ -2,7 +2,7 @@ import { Router } from "express";
 import { userAuthMiddleware } from "../utils/middlewares/userAuthMiddleware.mjs";
 
 import { getAuthToken, md5Hash, sendJsonResponse } from "../utils/utilFunctions.mjs";
-import db from "../utils/database.mjs";
+import databaseManager from "../utils/database.mjs";
 
 const router = Router();
 
@@ -16,7 +16,7 @@ router.post('/login', async (req, res) => {
             return sendJsonResponse(res, false, 400, "Email and password are required", []);
         }
         // Fetch user from database
-        const user = await db('users').where({ email }).first();
+        const user = await databaseManager.getKnex('users').where({ email }).first();
 
         if (!user) {
             return sendJsonResponse(res, false, 401, "Invalid credentials", []);

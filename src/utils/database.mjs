@@ -119,10 +119,8 @@ class DatabaseManager {
 // Create a singleton instance
 const databaseManager = new DatabaseManager();
 
-// Create a db function that returns the knex instance
-const db = async () => {
-    return await databaseManager.getKnex();
-};
+// Export the manager instance as default
+export default databaseManager;
 
 // Graceful shutdown handling
 process.on('SIGINT', async () => {
@@ -136,5 +134,3 @@ process.on('SIGTERM', async () => {
     await databaseManager.disconnect();
     process.exit(0);
 });
-
-export default db;
