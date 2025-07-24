@@ -5,7 +5,12 @@
   "main": "index.js",
   "scripts": {
     "start": "node server.mjs",
-    "dev": "nodemon server.mjs"
+    "dev": "nodemon server.mjs",
+    "build": "echo 'Backend build completed - no compilation needed'",
+    "vercel-build": "npm run build",
+    "migrate": "knex migrate:latest --knexfile knexfile.cjs",
+    "seed": "knex seed:run --knexfile knexfile.cjs",
+    "deploy": "npm start"
   },
   "repository": {
     "type": "git",
@@ -26,8 +31,12 @@
     "knex": "^3.1.0",
     "multer": "^2.0.1",
     "mysql2": "^3.14.1",
+    "node-fetch": "^3.3.2",
+    "node-forge": "^1.3.1",
     "nodemon": "^3.1.10",
     "pg": "^8.16.3",
+    "pg-types": "^4.0.2",
+    "serverless-http": "^3.2.0",
     "update": "^0.7.4"
   }
 }
