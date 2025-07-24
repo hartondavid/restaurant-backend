@@ -5,11 +5,6 @@ import { userAuthMiddleware } from "../utils/middlewares/userAuthMiddleware.mjs"
 
 const router = Router();
 
-// Handle OPTIONS requests for CORS preflight
-router.options('*', (req, res) => {
-    res.status(200).end();
-});
-
 // Adaugă o masa
 router.post('/addBoard', userAuthMiddleware, async (req, res) => {
 

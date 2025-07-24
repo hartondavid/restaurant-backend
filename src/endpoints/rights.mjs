@@ -5,11 +5,6 @@ import { sendJsonResponse } from "../utils/utilFunctions.mjs";
 
 const router = Router();
 
-// Handle OPTIONS requests for CORS preflight
-router.options('*', (req, res) => {
-    res.status(200).end();
-});
-
 router.get('/getUserRights', userAuthMiddleware, async (req, res) => {
     try {
         const userRights = await db('user_rights')

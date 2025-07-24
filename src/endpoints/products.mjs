@@ -9,11 +9,6 @@ const upload = createMulter('public/uploads/products', ['image/jpeg', 'image/png
 
 const router = Router();
 
-// Handle OPTIONS requests for CORS preflight
-router.options('*', (req, res) => {
-    res.status(200).end();
-});
-
 // Adaugă un produs nou
 router.post('/addProduct', userAuthMiddleware, upload.fields([{ name: 'image' }]), async (req, res) => {
     try {
