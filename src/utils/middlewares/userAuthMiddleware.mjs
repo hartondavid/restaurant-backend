@@ -4,6 +4,7 @@ import databaseManager from '../database.mjs'; // Adjust the path as necessary
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
 
+
 export const userAuthMiddleware = async (req, res, next) => {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
