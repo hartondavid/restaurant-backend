@@ -33,7 +33,7 @@ router.post('/addProduct', userAuthMiddleware, upload.fields([{ name: 'image' }]
             return sendJsonResponse(res, false, 400, "Image is required", null);
         }
 
-        const photoUrl = await smartUpload(req.files['image'][0], 'restaurant-food');
+        const photoUrl = await smartUpload(req.files['image'][0], 'products');
         const result = await (await databaseManager.getKnex())('products').insert({ name, image: photoUrl, description, price, quantity, manager_id: userId }).returning('id');
 
         // Handle different database return formats
@@ -111,7 +111,7 @@ router.put('/updateProduct/:productId', userAuthMiddleware, upload.fields([{ nam
 
         if (req.files && req.files['image'] && req.files['image'][0]) {
             // Use smart upload function that automatically chooses storage method
-            const photoUrl = await smartUpload(req.files['image'][0], 'restaurant-food');
+            const photoUrl = await smartUpload(req.files['image'][0], 'products');
 
             updateData.image = photoUrl;
         }
@@ -285,8 +285,6 @@ router.get('/getProduct/:productId', userAuthMiddleware, async (req, res) => {
 
 router.get('/getPaymentsByMonth', userAuthMiddleware, async (req, res) => {
     try {
-
-
         const userId = req.user.id;
 
         const userRights = await (await databaseManager.getKnex())('user_rights')
