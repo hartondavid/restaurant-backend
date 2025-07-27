@@ -3,10 +3,9 @@ require('dotenv').config({ path: './.env.local' });
 
 // This is the base configuration that will be shared
 const baseConfig = {
-    client: 'pg', // PostgreSQL client
+    client: 'pg', // Changed from 'mysql2' to 'pg' for PostgreSQL
     migrations: {
-        directory: './migrations',
-        tableName: 'knex_migrations'
+        directory: './migrations'
     },
     seeds: {
         directory: './seeds'
@@ -26,13 +25,13 @@ module.exports = {
     production: {
         ...baseConfig,
         connection: process.env.DATABASE_URL,
-        // SSL is required for connecting to Neon from Vercel
+        // SSL is required for connecting to Supabase from a cloud environment like Vercel
         ssl: { rejectUnauthorized: false },
-        // Connection pool configuration for Neon
+        // The connection pool is managed by Supabase's PgBouncer, 
+        // so we use a minimal pool config on the client-side.
         pool: {
-            min: 1,
-            max: 5,
-
+            min: 2,
+            max: 10
         }
     }
 };

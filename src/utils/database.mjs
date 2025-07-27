@@ -12,7 +12,7 @@ class DatabaseManager {
     async connect() {
         try {
             if (!this.knex) {
-                console.log('🔌 Connecting to Neon database...');
+                console.log('🔌 Connecting to database...');
 
                 // Select the correct environment configuration
                 const environment = process.env.NODE_ENV || 'production';
@@ -20,7 +20,7 @@ class DatabaseManager {
 
                 console.log('📊 Database config:', {
                     environment,
-                    hasConnectionString: !!config.connection
+                    connection: config.connection
                 });
 
                 this.knex = knex(config);
@@ -28,7 +28,7 @@ class DatabaseManager {
                 // Test the connection
                 await this.knex.raw('SELECT 1');
                 this.isConnected = true;
-                console.log('✅ Neon database connected successfully');
+                console.log('✅ Database connected successfully');
 
                 // Check if database exists
                 try {
@@ -76,6 +76,7 @@ class DatabaseManager {
         }
     }
 
+
     async getKnex() {
         if (!this.knex) {
             await this.connect();
@@ -90,17 +91,6 @@ class DatabaseManager {
                 await this.connect();
             }
             console.log('📋 Running migrations...');
-            console.log('🔍 Knex instance:', typeof this.knex);
-            console.log('🔍 Knex migrate method:', typeof this.knex.migrate);
-
-            // Check migration status before running
-            try {
-                const migrationStatus = await this.knex.migrate.status();
-                console.log('📊 Migration status:', migrationStatus);
-            } catch (statusError) {
-                console.log('⚠️ Could not check migration status:', statusError.message);
-            }
-
             await this.knex.migrate.latest();
             console.log('✅ Migrations completed successfully');
         } catch (error) {
@@ -117,8 +107,6 @@ class DatabaseManager {
                 await this.connect();
             }
             console.log('📦 Running seeds...');
-            console.log('🔍 Knex instance:', typeof this.knex);
-            console.log('🔍 Knex seed method:', typeof this.knex.seed);
             await this.knex.seed.run();
             console.log('✅ Seeds completed successfully');
         } catch (error) {
@@ -134,7 +122,6 @@ const databaseManager = new DatabaseManager();
 
 // Export the manager instance as default
 export default databaseManager;
-
 
 // Graceful shutdown handling
 process.on('SIGINT', async () => {
