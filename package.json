@@ -10,8 +10,6 @@
     "vercel-build": "npm run build",
     "migrate": "knex migrate:latest --knexfile knexfile.cjs",
     "seed": "knex seed:run --knexfile knexfile.cjs",
-    "test-db": "node test-db-config.js",
-    "setup-env": "node setup-env.js",
     "deploy": "npm start"
   },
   "repository": {
