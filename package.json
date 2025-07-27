@@ -9,6 +9,8 @@
     "build": "echo 'Backend build completed - no compilation needed'",
     "migrate": "knex migrate:latest --knexfile knexfile.cjs",
     "seed": "knex seed:run --knexfile knexfile.cjs",
+    "migrate:run": "node run-migrations.mjs",
+    "check:env": "node check-env.mjs",
     "deploy": "npm start"
   },
   "repository": {

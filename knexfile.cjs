@@ -3,9 +3,10 @@ require('dotenv').config({ path: './.env.local' });
 
 // This is the base configuration that will be shared
 const baseConfig = {
-    client: 'pg', // Changed from 'mysql2' to 'pg' for PostgreSQL
+    client: 'pg', // PostgreSQL client
     migrations: {
-        directory: './migrations'
+        directory: './migrations',
+        tableName: 'knex_migrations'
     },
     seeds: {
         directory: './seeds'

@@ -92,6 +92,15 @@ class DatabaseManager {
             console.log('📋 Running migrations...');
             console.log('🔍 Knex instance:', typeof this.knex);
             console.log('🔍 Knex migrate method:', typeof this.knex.migrate);
+
+            // Check migration status before running
+            try {
+                const migrationStatus = await this.knex.migrate.status();
+                console.log('📊 Migration status:', migrationStatus);
+            } catch (statusError) {
+                console.log('⚠️ Could not check migration status:', statusError.message);
+            }
+
             await this.knex.migrate.latest();
             console.log('✅ Migrations completed successfully');
         } catch (error) {
