@@ -3,7 +3,6 @@
 import express from "express"
 import dotenv from 'dotenv'
 import cors from 'cors'
-import path from 'path'
 import databaseManager from './src/utils/database.mjs'
 
 const app = express();
@@ -26,20 +25,6 @@ app.use(cors({
     exposedHeaders: ['X-Auth-Token']
 }));
 
-// Serve static files for both local and production environments
-const isProduction = process.env.VERCEL || process.env.NODE_ENV === 'production';
-const useLocalStorage = process.env.USE_LOCAL_STORAGE === 'true';
-
-if (!isProduction || useLocalStorage) {
-    // Serve static files from public directory for local development
-    app.use('/public', express.static(path.join(process.cwd(), 'public')));
-    app.use('/uploads', express.static(path.join(process.cwd(), 'public/uploads')));
-    console.log('📁 Static files served from /public and /uploads');
-} else {
-    // In production, files are served from Vercel Blob URLs
-    console.log('☁️ Static files served from Vercel Blob in production');
-}
-
 // Run migrations before starting the server
 const runMigrations = async () => {
     try {
@@ -52,8 +37,8 @@ const runMigrations = async () => {
 
         // Check if database exists and show tables
         try {
-            const tables = await knex.raw("SELECT tablename FROM pg_tables WHERE schemaname = 'public'");
-            console.log('📋 Existing tables:', tables.rows.map(row => row.tablename));
+            const tables = await knex.raw('SHOW TABLES');
+            console.log('📋 Existing tables:', tables[0].map(table => Object.values(table)[0]));
         } catch (error) {
             console.log('⚠️ Could not check tables:', error.message);
         }
@@ -64,8 +49,8 @@ const runMigrations = async () => {
 
         // Check tables after migrations
         try {
-            const tablesAfter = await knex.raw("SELECT tablename FROM pg_tables WHERE schemaname = 'public'");
-            console.log('📋 Tables after migrations:', tablesAfter.rows.map(row => row.tablename));
+            const tablesAfter = await knex.raw('SHOW TABLES');
+            console.log('📋 Tables after migrations:', tablesAfter[0].map(table => Object.values(table)[0]));
         } catch (error) {
             console.log('⚠️ Could not check tables after migrations:', error.message);
         }
@@ -447,21 +432,6 @@ app.post('/login', async (req, res) => {
         });
     }
 });
-
-// Load API routes
-try {
-    console.log('📡 Loading API routes...');
-    const { default: apiRouter } = await import('./src/routes/apiRoute.mjs');
-    app.use('/api', apiRouter);
-    apiRoutes = true;
-    console.log('✅ Database API routes loaded successfully');
-} catch (error) {
-    console.error('❌ Failed to load API routes:', error.message);
-    console.log('⚠️ Database API routes not available, using simplified version');
-    apiRoutes = false;
-}
-
-console.log('📡 Full API available at /api/*');
 
 // 404 handler for undefined routes
 app.use('*', (req, res) => {
