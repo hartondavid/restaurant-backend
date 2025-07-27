@@ -4,10 +4,9 @@
   "description": "To make it easy for you to get started with GitLab, here's a list of recommended next steps.",
   "main": "index.js",
   "scripts": {
-    "start": "node server.mjs",
-    "dev": "nodemon server.mjs",
+    "start": "node index.mjs",
+    "dev": "nodemon index.mjs",
     "build": "echo 'Backend build completed - no compilation needed'",
-    "vercel-build": "npm run build",
     "migrate": "knex migrate:latest --knexfile knexfile.cjs",
     "seed": "knex seed:run --knexfile knexfile.cjs",
     "deploy": "npm start"
